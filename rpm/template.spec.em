@@ -15,7 +15,13 @@ License:        @(License)
 Source0:        %{name}-%{version}.tar.gz
 @[if NoArch]@\nBuildArch:      noarch@\n@[end if]@
 
+Requires:       java
+Requires:       maven
+Requires:       perl-Data-Dumper
 @[for p in Depends]Requires:       @p@\n@[end for]@
+BuildRequires:  java
+BuildRequires:  maven
+BuildRequires:  perl-Data-Dumper
 @[for p in BuildDepends]BuildRequires:  @p@\n@[end for]@
 @[for p in Conflicts]Conflicts:      @p@\n@[end for]@
 @[for p in Replaces]Obsoletes:      @p@\n@[end for]@
