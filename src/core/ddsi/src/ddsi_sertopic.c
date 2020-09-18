@@ -56,7 +56,8 @@ uint32_t ddsi_sertopic_hash (const struct ddsi_sertopic *a)
 struct ddsi_sertopic *ddsi_sertopic_ref (const struct ddsi_sertopic *sertopic_const)
 {
   struct ddsi_sertopic *sertopic = (struct ddsi_sertopic *) sertopic_const;
-  ddsrt_atomic_inc32 (&sertopic->refc);
+  if (sertopic)
+    ddsrt_atomic_inc32 (&sertopic->refc);
   return sertopic;
 }
 
@@ -67,7 +68,7 @@ struct ddsi_sertopic *ddsi_sertopic_lookup_locked (struct ddsi_domaingv *gv, con
   if (sertopic != NULL)
     assert (sertopic->gv != NULL);
 #endif
-  return sertopic ? ddsi_sertopic_ref (sertopic) : NULL;
+  return ddsi_sertopic_ref (sertopic);
 }
 
 void ddsi_sertopic_register_locked (struct ddsi_domaingv *gv, struct ddsi_sertopic *sertopic)
@@ -83,18 +84,21 @@ void ddsi_sertopic_register_locked (struct ddsi_domaingv *gv, struct ddsi_sertop
 
 void ddsi_sertopic_unref (struct ddsi_sertopic *sertopic)
 {
-  if (ddsrt_atomic_dec32_ov (&sertopic->refc) == 1)
+  if (sertopic)
   {
-    /* if registered, drop from set of registered sertopics */
-    if (sertopic->gv)
+    if (ddsrt_atomic_dec32_ov (&sertopic->refc) == 1)
     {
-      ddsrt_mutex_lock (&sertopic->gv->sertopics_lock);
-      (void) ddsrt_hh_remove (sertopic->gv->sertopics, sertopic);
-      ddsrt_mutex_unlock (&sertopic->gv->sertopics_lock);
-      sertopic->gv = NULL;
-    }
+      /* if registered, drop from set of registered sertopics */
+      if (sertopic->gv)
+      {
+        ddsrt_mutex_lock (&sertopic->gv->sertopics_lock);
+        (void) ddsrt_hh_remove (sertopic->gv->sertopics, sertopic);
+        ddsrt_mutex_unlock (&sertopic->gv->sertopics_lock);
+        sertopic->gv = NULL;
+      }
 
-    ddsi_sertopic_free (sertopic);
+      ddsi_sertopic_free (sertopic);
+    }
   }
 }
 

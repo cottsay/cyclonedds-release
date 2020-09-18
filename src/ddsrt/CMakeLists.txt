@@ -62,10 +62,6 @@ if(WITH_FREERTOS)
   set(system_name freertos)
 elseif(APPLE)
   set(system_name darwin)
-elseif(ANDROID)
-  # FIXME: Not correct, but will do for the short-term. A better way would be
-  #        fallback to linux, and then posix.
-  set(system_name linux)
 else()
   string(TOLOWER ${CMAKE_SYSTEM_NAME} system_name)
 endif()
@@ -134,8 +130,7 @@ list(APPEND sources
   "${source_path}/strtol.c"
   "${source_path}/mh3.c"
   "${source_path}/avl.c"
-  "${source_path}/environ.c"
-  "${source_path}/expand_vars.c"
+  "${source_path}/expand_envvars.c"
   "${source_path}/fibheap.c"
   "${source_path}/hopscotch.c"
   "${source_path}/thread_pool.c"
@@ -153,7 +148,7 @@ list(APPEND sources
 # network stack. In order to mix-and-match various compilers, architectures,
 # operating systems, etc input from the build system is required.
 foreach(feature atomics cdtors environ heap ifaddrs random rusage
-        sockets string sync threads time md5 process netstat dynlib filesystem)
+                sockets string sync threads time md5 process netstat)
   if(EXISTS "${include_path}/dds/ddsrt/${feature}.h")
     list(APPEND headers "${include_path}/dds/ddsrt/${feature}.h")
     file(GLOB_RECURSE
@@ -238,7 +233,6 @@ if(NOT WITH_FREERTOS)
   set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
   find_package(Threads REQUIRED)
   target_link_libraries(ddsrt INTERFACE Threads::Threads)
-  target_link_libraries(ddsrt INTERFACE ${CMAKE_DL_LIBS})
 endif()
 
 if(WIN32)

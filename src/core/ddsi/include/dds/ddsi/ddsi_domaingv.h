@@ -21,8 +21,8 @@
 #include "dds/ddsrt/fibheap.h"
 
 #include "dds/ddsi/ddsi_plist.h"
-#include "dds/ddsi/ddsi_ownip.h"
 #include "dds/ddsi/q_protocol.h"
+#include "dds/ddsi/q_nwif.h"
 #include "dds/ddsi/q_sockwaitset.h"
 #include "dds/ddsi/q_config.h"
 
@@ -46,9 +46,6 @@ struct ddsi_tran_factory;
 struct ddsrt_thread_pool_s;
 struct debug_monitor;
 struct ddsi_tkmap;
-struct dds_security_context;
-struct dds_security_match_index;
-struct ddsi_hsadmin;
 
 typedef struct config_in_addr_node {
    nn_locator_t loc;
@@ -243,7 +240,7 @@ struct ddsi_domaingv {
 
   /* Start time of the DDSI2 service, for logging relative time stamps,
      should I ever so desire. */
-  ddsrt_wctime_t tstart;
+  nn_wctime_t tstart;
 
   /* Default QoSs for participant, readers and writers (needed for
      eliminating default values in outgoing discovery packets, and for
@@ -261,12 +258,6 @@ struct ddsi_domaingv {
   dds_qos_t spdp_endpoint_xqos;
   dds_qos_t builtin_endpoint_xqos_rd;
   dds_qos_t builtin_endpoint_xqos_wr;
-#ifdef DDSI_INCLUDE_SECURITY
-  dds_qos_t builtin_volatile_xqos_rd;
-  dds_qos_t builtin_volatile_xqos_wr;
-  dds_qos_t builtin_stateless_xqos_rd;
-  dds_qos_t builtin_stateless_xqos_wr;
-#endif
 
   /* SPDP packets get very special treatment (they're the only packets
      we accept from writers we don't know) and have their very own
@@ -294,18 +285,8 @@ struct ddsi_domaingv {
      transmit queue*/
   struct serdatapool *serpool;
   struct nn_xmsgpool *xmsgpool;
-  struct ddsi_sertopic *spdp_topic; /* key = participant GUID */
-  struct ddsi_sertopic *sedp_reader_topic; /* key = endpoint GUID */
-  struct ddsi_sertopic *sedp_writer_topic; /* key = endpoint GUID */
-  struct ddsi_sertopic *pmd_topic; /* participant message data */
-#ifdef DDSI_INCLUDE_SECURITY
-  struct ddsi_sertopic *spdp_secure_topic; /* key = participant GUID */
-  struct ddsi_sertopic *sedp_reader_secure_topic; /* key = endpoint GUID */
-  struct ddsi_sertopic *sedp_writer_secure_topic; /* key = endpoint GUID */
-  struct ddsi_sertopic *pmd_secure_topic; /* participant message data */
-  struct ddsi_sertopic *pgm_stateless_topic; /* participant generic message */
-  struct ddsi_sertopic *pgm_volatile_topic; /* participant generic message */
-#endif
+  struct ddsi_sertopic *plist_topic; /* used for all discovery data */
+  struct ddsi_sertopic *rawcdr_topic; /* used for participant message data */
 
   ddsrt_mutex_t sendq_lock;
   ddsrt_cond_t sendq_cond;
@@ -325,14 +306,6 @@ struct ddsi_domaingv {
 
   ddsrt_mutex_t sertopics_lock;
   struct ddsrt_hh *sertopics;
-
-  /* security globals */
-#ifdef DDSI_INCLUDE_SECURITY
-  struct dds_security_context *security_context;
-  struct ddsi_hsadmin *hsadmin;
-  bool handshake_include_optional;
-#endif
-
 };
 
 #if defined (__cplusplus)

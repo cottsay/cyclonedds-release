@@ -14,6 +14,7 @@
 
 #include "dds/ddsrt/endian.h"
 #include "dds/ddsi/q_log.h"
+#include "dds/ddsi/q_time.h"
 #include "dds/ddsi/q_config.h"
 #include "dds/ddsi/ddsi_domaingv.h"
 #include "dds/ddsi/q_bswap.h"
@@ -76,7 +77,7 @@ static const ipv4_hdr_t ipv4_hdr_template = {
 #define IPV4_HDR_SIZE 20
 #define UDP_HDR_SIZE 8
 
-FILE *new_pcap_file (struct ddsi_domaingv *gv, const char *name)
+FILE *new_pcap_file (const struct ddsrt_log_cfg *logcfg, const char *name)
 {
   DDSRT_WARNING_MSVC_OFF(4996);
   FILE *fp;
@@ -84,7 +85,7 @@ FILE *new_pcap_file (struct ddsi_domaingv *gv, const char *name)
 
   if ((fp = fopen (name, "wb")) == NULL)
   {
-    GVWARNING ("packet capture disabled: file %s could not be opened for writing\n", name);
+    DDS_CWARNING (logcfg, "packet capture disabled: file %s could not be opened for writing\n", name);
     return NULL;
   }
 
@@ -126,7 +127,7 @@ static uint16_t calc_ipv4_checksum (const uint16_t *x)
   return (uint16_t) ~s;
 }
 
-void write_pcap_received (struct ddsi_domaingv *gv, ddsrt_wctime_t tstamp, const struct sockaddr_storage *src, const struct sockaddr_storage *dst, unsigned char *buf, size_t sz)
+void write_pcap_received (struct ddsi_domaingv *gv, nn_wctime_t tstamp, const struct sockaddr_storage *src, const struct sockaddr_storage *dst, unsigned char *buf, size_t sz)
 {
   if (gv->config.transport_selector == TRANS_UDP)
   {
@@ -139,7 +140,7 @@ void write_pcap_received (struct ddsi_domaingv *gv, ddsrt_wctime_t tstamp, const
     size_t sz_ud = sz + UDP_HDR_SIZE;
     size_t sz_iud = sz_ud + IPV4_HDR_SIZE;
     ddsrt_mutex_lock (&gv->pcap_lock);
-    ddsrt_wctime_to_sec_usec (&pcap_hdr.ts_sec, &pcap_hdr.ts_usec, tstamp);
+    wctime_to_sec_usec (&pcap_hdr.ts_sec, &pcap_hdr.ts_usec, tstamp);
     pcap_hdr.incl_len = pcap_hdr.orig_len = (uint32_t) sz_iud;
     (void) fwrite (&pcap_hdr, sizeof (pcap_hdr), 1, gv->pcap_fp);
     u.ipv4_hdr = ipv4_hdr_template;
@@ -159,7 +160,7 @@ void write_pcap_received (struct ddsi_domaingv *gv, ddsrt_wctime_t tstamp, const
   }
 }
 
-void write_pcap_sent (struct ddsi_domaingv *gv, ddsrt_wctime_t tstamp, const struct sockaddr_storage *src, const ddsrt_msghdr_t *hdr, size_t sz)
+void write_pcap_sent (struct ddsi_domaingv *gv, nn_wctime_t tstamp, const struct sockaddr_storage *src, const ddsrt_msghdr_t *hdr, size_t sz)
 {
   if (gv->config.transport_selector == TRANS_UDP)
   {
@@ -172,7 +173,7 @@ void write_pcap_sent (struct ddsi_domaingv *gv, ddsrt_wctime_t tstamp, const str
     size_t sz_ud = sz + UDP_HDR_SIZE;
     size_t sz_iud = sz_ud + IPV4_HDR_SIZE;
     ddsrt_mutex_lock (&gv->pcap_lock);
-    ddsrt_wctime_to_sec_usec (&pcap_hdr.ts_sec, &pcap_hdr.ts_usec, tstamp);
+    wctime_to_sec_usec (&pcap_hdr.ts_sec, &pcap_hdr.ts_usec, tstamp);
     pcap_hdr.incl_len = pcap_hdr.orig_len = (uint32_t) sz_iud;
     (void) fwrite (&pcap_hdr, sizeof (pcap_hdr), 1, gv->pcap_fp);
     u.ipv4_hdr = ipv4_hdr_template;

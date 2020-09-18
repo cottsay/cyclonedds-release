@@ -18,6 +18,7 @@
 #include "dds/ddsrt/string.h"
 #include "dds/ddsrt/atomics.h"
 #include "dds/ddsrt/process.h"
+#include "dds/ddsrt/timeconv.h"
 
 
 ddsrt_pid_t

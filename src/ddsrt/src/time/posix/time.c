@@ -21,28 +21,21 @@
 dds_time_t dds_time(void)
 {
   struct timespec ts;
+
   (void)clock_gettime(CLOCK_REALTIME, &ts);
   return (ts.tv_sec * DDS_NSECS_IN_SEC) + ts.tv_nsec;
 }
 
-ddsrt_wctime_t ddsrt_time_wallclock(void)
+dds_time_t ddsrt_time_monotonic(void)
 {
   struct timespec ts;
-  (void)clock_gettime(CLOCK_REALTIME, &ts);
-  return (ddsrt_wctime_t) { (ts.tv_sec * DDS_NSECS_IN_SEC) + ts.tv_nsec };
-}
 
-ddsrt_mtime_t ddsrt_time_monotonic(void)
-{
-  struct timespec ts;
   (void)clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (ddsrt_mtime_t) { (ts.tv_sec * DDS_NSECS_IN_SEC) + ts.tv_nsec };
+  return (ts.tv_sec * DDS_NSECS_IN_SEC) + ts.tv_nsec;
 }
 
-ddsrt_etime_t ddsrt_time_elapsed(void)
+dds_time_t ddsrt_time_elapsed(void)
 {
   /* Elapsed time clock not worth the bother for now. */
-  struct timespec ts;
-  (void)clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (ddsrt_etime_t) { (ts.tv_sec * DDS_NSECS_IN_SEC) + ts.tv_nsec };
+  return ddsrt_time_monotonic();
 }

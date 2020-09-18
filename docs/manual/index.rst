@@ -21,7 +21,6 @@ Welcome to Eclipse Cyclone DDS's documentation!
    GettingStartedGuide/index
    ddsc
    config
-   security
 
 Indices and tables
 ==================

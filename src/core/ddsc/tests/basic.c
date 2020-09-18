@@ -10,7 +10,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
  */
 #include "dds/dds.h"
-#include "test_common.h"
+#include "CUnit/Test.h"
 
 CU_Test(ddsc_basic, test)
 {

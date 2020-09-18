@@ -32,15 +32,10 @@ dds_time_t dds_time(void)
 #endif
 }
 
-ddsrt_wctime_t ddsrt_time_wallclock(void)
-{
-  return (ddsrt_wctime_t) { dds_time () };
-}
-
-ddsrt_mtime_t ddsrt_time_monotonic(void)
+dds_time_t ddsrt_time_monotonic(void)
 {
 #if defined MAC_OS_X_VERSION_10_12 && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
-  return (ddsrt_mtime_t) { (int64_t) clock_gettime_nsec_np (CLOCK_UPTIME_RAW) };
+  return (int64_t) clock_gettime_nsec_np (CLOCK_UPTIME_RAW);
 #else
   static mach_timebase_info_data_t timeInfo;
   uint64_t mt;
@@ -62,17 +57,16 @@ ddsrt_mtime_t ddsrt_time_monotonic(void)
     (void)mach_timebase_info(&timeInfo);
   }
 
-  return (ddsrt_mtime_t) { mt * timeInfo.numer / timeInfo.denom };
+  return (dds_time_t)(mt * timeInfo.numer / timeInfo.denom);
 #endif
 }
 
-ddsrt_etime_t ddsrt_time_elapsed(void)
+dds_time_t ddsrt_time_elapsed(void)
 {
 #if defined MAC_OS_X_VERSION_10_12 && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
-  return (ddsrt_etime_t) { (int64_t) clock_gettime_nsec_np (CLOCK_MONOTONIC_RAW) };
+  return (int64_t) clock_gettime_nsec_np (CLOCK_MONOTONIC_RAW);
 #else
   /* Elapsed time clock not (yet) supported on this platform. */
-  dds_mtime_t mt = ddsrt_time_monotonic();
-  return (ddsrt_etime_t) { mt.v };
+  return ddsrt_time_monotonic();
 #endif
 }

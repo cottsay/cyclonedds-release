@@ -85,9 +85,7 @@ const struct dds_entity_deriver dds_entity_deriver_participant = {
   .close = dds_entity_deriver_dummy_close,
   .delete = dds_participant_delete,
   .set_qos = dds_participant_qos_set,
-  .validate_status = dds_participant_status_validate,
-  .create_statistics = dds_entity_deriver_dummy_create_statistics,
-  .refresh_statistics = dds_entity_deriver_dummy_refresh_statistics
+  .validate_status = dds_participant_status_validate
 };
 
 dds_entity_t dds_create_participant (const dds_domainid_t domain, const dds_qos_t *qos, const dds_listener_t *listener)
@@ -98,7 +96,7 @@ dds_entity_t dds_create_participant (const dds_domainid_t domain, const dds_qos_
   dds_participant * pp;
   ddsi_plist_t plist;
   dds_qos_t *new_qos = NULL;
-  const char *config = "";
+  char *config = "";
 
   /* Make sure DDS instance is initialized. */
   if ((ret = dds_init ()) < 0)

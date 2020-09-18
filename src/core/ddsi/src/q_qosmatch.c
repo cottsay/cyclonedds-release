@@ -12,6 +12,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "dds/ddsi/q_time.h"
 #include "dds/ddsi/ddsi_xqos.h"
 #include "dds/ddsi/q_misc.h"
 #include "dds/ddsi/q_qosmatch.h"
